@@ -1,0 +1,68 @@
+x = [0.1:1/22:1]; %vienas įėjimas (įėjime paduodamas 20 skaičių vektorius X, 
+                  % su reikšmėmis intervale nuo 0 iki 1
+
+out = sin(2*pi*x/0.7)/6;           %vienas išėjimas
+                                   % (pvz., išėjime tikimasi tokio norimo atsako, 
+                                   % kurį galima būtų apskaičiuoti pagal formulę: 
+                                   % y = (1 + 0.6*sin(2*pi*x/0.7)) + 0.3*sin(2*pi*x))/2;
+                                   
+%- kuriamas neuronų tinklas turėtų "modeliuoti/imituoti šios formulės elgesį" 
+% naudodamas visiškai kitokią matematinę išraišką nei ši);
+%--------------------------------------------------------------------------------
+
+w1 = [randn(1) randn(1) randn(1) randn(1) randn(1) randn(1) randn(1) randn(1)];
+w2 = [randn(1) randn(1) randn(1) randn(1) randn(1) randn(1) randn(1) randn(1)];
+b = [randn(1) randn(1) randn(1) randn(1) randn(1) randn(1) randn(1) randn(1)];
+bb = randn(1);
+
+nu = 0.1;
+%--------------------------------------------------------------------------------
+
+ v_1 = w1(1)*x(1)+ b(1);
+ y_1 = 1/(1+exp(-v_1));
+ e = out(1) - y_1;
+ 
+%--------------------------------------------------------------------------------
+while abs(e) >=  nu
+for n = 1:20
+for i = 1:8
+   v1 = w1(i)*x(n)+b(i);
+   y1(i) = 1/(1+exp(-v1));
+end
+    v2 = bb;
+for a = 1:8
+   v2 =v2+y1(a)*w2(a);
+end
+   e = out(n) - v2;
+    bb = bb + nu*e; 
+   for aa=1:8
+      w2(aa) = w2(aa)+nu*e*y1(aa);
+      b(aa) = b(aa) + nu*e;  
+      w1(aa) = w1(aa)*nu*sig(y1(aa),w2(aa),e)*x(n);
+   end
+end
+end
+
+%-----patikrinama-----------
+ot = [];
+for n = 1:20
+for i = 1:8
+   v1 = w1(i)*x(n)+b(i);
+   y2(i) = 1/(1+exp(-v1));
+end
+    v2 = bb;
+for z = 1:8
+v2 = y2(i)*w2(i);
+end
+    ot = [ot v2];
+end
+
+figure
+    plot(x,out,'*',x,out,'green',x,out+ot,'+',x,out+ot,'red');
+    title('virsutine kreive po apmokymo, o apatine iki apmokymo')
+    grid on;
+    hold on;
+    
+function y = sig(y1,w2,e)
+y = y1*(1-y1)*e*w2;
+end
